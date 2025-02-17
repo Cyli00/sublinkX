@@ -94,55 +94,55 @@ proxy-groups:
       - 🎯 全球直连
       - ♻️ 自动选择
 rules:
-  -DOMAIN-SUFFIX,okex.com,💱 加密货币
-  -DOMAIN-SUFFIX,okx.com,💱 加密货币
-  -DOMAIN-SUFFIX,okx-dns.com,💱 加密货币
-  -DOMAIN-SUFFIX,okx-dns1.com,💱 加密货币
-  -DOMAIN-SUFFIX,okx-dns2.com,💱 加密货币
-  -PROCESS-NAME,OKX.exe,💱 加密货币
-  -DOMAIN-KEYWORD,okx,💱 加密货币
-  -DOMAIN-SUFFIX,gate.ac,💱 加密货币
-  -DOMAIN-SUFFIX,gate.io,💱 加密货币
-  -DOMAIN-SUFFIX,binance.cc,💱 加密货币
-  -DOMAIN-SUFFIX,binance.cloud,💱 加密货币
-  -DOMAIN-SUFFIX,binance.com,💱 加密货币
-  -DOMAIN-SUFFIX,binance.im,💱 加密货币
-  -DOMAIN-SUFFIX,binance.me,💱 加密货币
-  -DOMAIN-SUFFIX,binance.us,💱 加密货币
-  -DOMAIN-SUFFIX,bnappzh.co,💱 加密货币
-  -DOMAIN-SUFFIX,bnappzh.com,💱 加密货币
-  -DOMAIN-SUFFIX,bnbstatic.com,💱 加密货币
-  -DOMAIN-SUFFIX,bntrace.com,💱 加密货币
-  -DOMAIN-SUFFIX,binance.charity,💱 加密货币
-  -DOMAIN-SUFFIX,binance.co,💱 加密货币
-  -DOMAIN-SUFFIX,binance.info,💱 加密货币
-  -DOMAIN-SUFFIX,binance.net,💱 加密货币
-  -DOMAIN-SUFFIX,binance.org,💱 加密货币
-  -DOMAIN-SUFFIX,binance.vision,💱 加密货币
-  -DOMAIN-SUFFIX,binanceapi.com,💱 加密货币
-  -DOMAIN-SUFFIX,binancezh.be,💱 加密货币
-  -DOMAIN-SUFFIX,binancezh.biz,💱 加密货币
-  -DOMAIN-SUFFIX,binancezh.cc,💱 加密货币
-  -DOMAIN-SUFFIX,binancezh.co,💱 加密货币
-  -DOMAIN-SUFFIX,binancezh.com,💱 加密货币
-  -DOMAIN-SUFFIX,binancezh.info,💱 加密货币
-  -DOMAIN-SUFFIX,binancezh.ink,💱 加密货币
-  -DOMAIN-SUFFIX,binancezh.kim,💱 加密货币
-  -DOMAIN-SUFFIX,binancezh.link,💱 加密货币
-  -DOMAIN-SUFFIX,binancezh.live,💱 加密货币
-  -DOMAIN-SUFFIX,binancezh.mobi,💱 加密货币
-  -DOMAIN-SUFFIX,binancezh.net,💱 加密货币
-  -DOMAIN-SUFFIX,binancezh.pro,💱 加密货币
-  -DOMAIN-SUFFIX,binancezh.sh,💱 加密货币
-  -DOMAIN-SUFFIX,binancezh.top,💱 加密货币
-  -DOMAIN-SUFFIX,bnappzh.mobi,💱 加密货币
-  -DOMAIN-SUFFIX,bsc.getblock.io,💱 加密货币
-  -DOMAIN-SUFFIX,bscscan.com,💱 加密货币
-  -DOMAIN-SUFFIX,binancecnt.com,💱 加密货币
-  -PROCESS-NAME,Binance.exe,💱 加密货币
-  -DOMAIN-KEYWORD,binance,💱 加密货币
-  -DOMAIN-SUFFIX,binanceapi.com,💱 加密货币
-  -DOMAIN-SUFFIX,bnbstatic.com,💱 加密货币
+  - DOMAIN-SUFFIX,okex.com,💱 加密货币
+  - DOMAIN-SUFFIX,okx.com,💱 加密货币
+  - DOMAIN-SUFFIX,okx-dns.com,💱 加密货币
+  - DOMAIN-SUFFIX,okx-dns1.com,💱 加密货币
+  - DOMAIN-SUFFIX,okx-dns2.com,💱 加密货币
+  - PROCESS-NAME,OKX.exe,💱 加密货币
+  - DOMAIN-KEYWORD,okx,💱 加密货币
+  - DOMAIN-SUFFIX,gate.ac,💱 加密货币
+  - DOMAIN-SUFFIX,gate.io,💱 加密货币
+  - DOMAIN-SUFFIX,binance.cc,💱 加密货币
+  - DOMAIN-SUFFIX,binance.cloud,💱 加密货币
+  - DOMAIN-SUFFIX,binance.com,💱 加密货币
+  - DOMAIN-SUFFIX,binance.im,💱 加密货币
+  - DOMAIN-SUFFIX,binance.me,💱 加密货币
+  - DOMAIN-SUFFIX,binance.us,💱 加密货币
+  - DOMAIN-SUFFIX,bnappzh.co,💱 加密货币
+  - DOMAIN-SUFFIX,bnappzh.com,💱 加密货币
+  - DOMAIN-SUFFIX,bnbstatic.com,💱 加密货币
+  - DOMAIN-SUFFIX,bntrace.com,💱 加密货币
+  - DOMAIN-SUFFIX,binance.charity,💱 加密货币
+  - DOMAIN-SUFFIX,binance.co,💱 加密货币
+  - DOMAIN-SUFFIX,binance.info,💱 加密货币
+  - DOMAIN-SUFFIX,binance.net,💱 加密货币
+  - DOMAIN-SUFFIX,binance.org,💱 加密货币
+  - DOMAIN-SUFFIX,binance.vision,💱 加密货币
+  - DOMAIN-SUFFIX,binanceapi.com,💱 加密货币
+  - DOMAIN-SUFFIX,binancezh.be,💱 加密货币
+  - DOMAIN-SUFFIX,binancezh.biz,💱 加密货币
+  - DOMAIN-SUFFIX,binancezh.cc,💱 加密货币
+  - DOMAIN-SUFFIX,binancezh.co,💱 加密货币
+  - DOMAIN-SUFFIX,binancezh.com,💱 加密货币
+  - DOMAIN-SUFFIX,binancezh.info,💱 加密货币
+  - DOMAIN-SUFFIX,binancezh.ink,💱 加密货币
+  - DOMAIN-SUFFIX,binancezh.kim,💱 加密货币
+  - DOMAIN-SUFFIX,binancezh.link,💱 加密货币
+  - DOMAIN-SUFFIX,binancezh.live,💱 加密货币
+  - DOMAIN-SUFFIX,binancezh.mobi,💱 加密货币
+  - DOMAIN-SUFFIX,binancezh.net,💱 加密货币
+  - DOMAIN-SUFFIX,binancezh.pro,💱 加密货币
+  - DOMAIN-SUFFIX,binancezh.sh,💱 加密货币
+  - DOMAIN-SUFFIX,binancezh.top,💱 加密货币
+  - DOMAIN-SUFFIX,bnappzh.mobi,💱 加密货币
+  - DOMAIN-SUFFIX,bsc.getblock.io,💱 加密货币
+  - DOMAIN-SUFFIX,bscscan.com,💱 加密货币
+  - DOMAIN-SUFFIX,binancecnt.com,💱 加密货币
+  - PROCESS-NAME,Binance.exe,💱 加密货币
+  - DOMAIN-KEYWORD,binance,💱 加密货币
+  - DOMAIN-SUFFIX,binanceapi.com,💱 加密货币
+  - DOMAIN-SUFFIX,bnbstatic.com,💱 加密货币
   - DOMAIN-SUFFIX,local,🎯 全球直连
   - IP-CIDR,192.168.0.0/16,🎯 全球直连,no-resolve
   - IP-CIDR,10.0.0.0/8,🎯 全球直连,no-resolve
