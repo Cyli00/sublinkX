@@ -6,14 +6,24 @@ log-level: info
 external-controller: :9090
 dns:
   enabled: true
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
   nameserver:
-    - 119.29.29.29
-    - 223.5.5.5
+    - https://cloudflare-dns.com/dns-query
+    - 1.1.1.1
+    - 1.0.0.1
   fallback:
-    - 8.8.8.8
-    - 8.8.4.4
+    - https://cloudflare-dns.com/dns-query
     - tls://1.0.0.1:853
-    - tls://dns.google:853
+    - tls://1.1.1.1:853
+  fallback-filter:
+    geoip: true
+    ipcidr:
+      - 240.0.0.0/4
+      - 0.0.0.0/32
+    domain:
+      - '*.linux.do'
 proxies: ~
 proxy-groups:
   - name: 🔰 节点选择
@@ -27,7 +37,34 @@ proxy-groups:
     interval: 300
     proxies:
       - DIRECT
+  - name: 📲 电报信息
+    type: select
+    proxies:
+      - 🔰 节点选择
+      - 🎯 全球直连
   - name: 🎥 NETFLIX
+    type: select
+    proxies:
+      - 🔰 节点选择
+      - ♻️ 自动选择
+      - 🎯 全球直连
+  - name: Ⓜ️ 微软服务
+    type: select
+    proxies:
+      - 🎯 全球直连
+      - 🔰 节点选择
+  - name: 👨‍🎓 学术资源
+    type: select
+    proxies:
+      - 🎯 全球直连
+      - 🔰 节点选择
+  - name: 💱 加密货币
+    type: select
+    proxies:
+      - 🔰 节点选择
+      - ♻️ 自动选择
+      - 🎯 全球直连
+  - name: 🤖 AI服务
     type: select
     proxies:
       - 🔰 节点选择
@@ -45,12 +82,6 @@ proxy-groups:
       - 🛑 全球拦截
       - 🎯 全球直连
       - 🔰 节点选择
-  - name: 💱 加密货币
-    type: select
-    proxies:
-      - 🔰 节点选择
-      - ♻️ 自动选择
-      - 🎯 全球直连
   - name: 🌍 国外媒体
     type: select
     proxies:
@@ -62,16 +93,6 @@ proxy-groups:
     proxies:
       - 🎯 全球直连
       - 🔰 节点选择
-  - name: Ⓜ️ 微软服务
-    type: select
-    proxies:
-      - 🎯 全球直连
-      - 🔰 节点选择
-  - name: 📲 电报信息
-    type: select
-    proxies:
-      - 🔰 节点选择
-      - 🎯 全球直连
   - name: 🍎 苹果服务
     type: select
     proxies:
@@ -94,15 +115,6 @@ proxy-groups:
       - 🎯 全球直连
       - ♻️ 自动选择
 rules:
-  - DOMAIN-SUFFIX,okex.com,💱 加密货币
-  - DOMAIN-SUFFIX,okx.com,💱 加密货币
-  - DOMAIN-SUFFIX,okx-dns.com,💱 加密货币
-  - DOMAIN-SUFFIX,okx-dns1.com,💱 加密货币
-  - DOMAIN-SUFFIX,okx-dns2.com,💱 加密货币
-  - PROCESS-NAME,OKX.exe,💱 加密货币
-  - DOMAIN-KEYWORD,okx,💱 加密货币
-  - DOMAIN-SUFFIX,gate.ac,💱 加密货币
-  - DOMAIN-SUFFIX,gate.io,💱 加密货币
   - DOMAIN-SUFFIX,binance.cc,💱 加密货币
   - DOMAIN-SUFFIX,binance.cloud,💱 加密货币
   - DOMAIN-SUFFIX,binance.com,💱 加密货币
@@ -110,7 +122,6 @@ rules:
   - DOMAIN-SUFFIX,binance.me,💱 加密货币
   - DOMAIN-SUFFIX,binance.us,💱 加密货币
   - DOMAIN-SUFFIX,bnappzh.co,💱 加密货币
-  - DOMAIN-SUFFIX,bnappzh.com,💱 加密货币
   - DOMAIN-SUFFIX,bnbstatic.com,💱 加密货币
   - DOMAIN-SUFFIX,bntrace.com,💱 加密货币
   - DOMAIN-SUFFIX,binance.charity,💱 加密货币
@@ -141,8 +152,126 @@ rules:
   - DOMAIN-SUFFIX,binancecnt.com,💱 加密货币
   - PROCESS-NAME,Binance.exe,💱 加密货币
   - DOMAIN-KEYWORD,binance,💱 加密货币
-  - DOMAIN-SUFFIX,binanceapi.com,💱 加密货币
-  - DOMAIN-SUFFIX,bnbstatic.com,💱 加密货币
+  - DOMAIN-SUFFIX,okex.com,💱 加密货币
+  - DOMAIN-SUFFIX,okx.com,💱 加密货币
+  - DOMAIN-SUFFIX,okx-dns.com,💱 加密货币
+  - DOMAIN-SUFFIX,okx-dns1.com,💱 加密货币
+  - DOMAIN-SUFFIX,okx-dns2.com,💱 加密货币
+  - PROCESS-NAME,OKX.exe,💱 加密货币
+  - DOMAIN-KEYWORD,okx,💱 加密货币
+  - DOMAIN-SUFFIX,gate.ac,💱 加密货币
+  - DOMAIN-SUFFIX,gate.io,💱 加密货币
+  - DOMAIN-SUFFIX,acm.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,acs.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,aiaa.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,aip.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,ams.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,annualreviews.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,aps.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,ascelibrary.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,asm.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,asme.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,astm.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,blackwell-synergy.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,bmj.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,cabdirect.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,cambridge.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,cas.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,cell.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,clarivate.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,cnki.net,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,cqvip.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,crossref.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,csiro.au,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,deepdyve.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,doi.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,ebscohost.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,els-cdn.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,elsevier.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,emerald.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,endnote.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,engineeringvillage.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,icevirtuallibrary.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,ieee.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,imf.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,iop.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,jamanetwork.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,jbc.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,jhu.edu,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,jstor.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,karger.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,libguides.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,madsrevolution.net,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,mdpi.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,mpg.de,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,myilibrary.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,nature.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,ncbi.nlm.nih.gov,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,oecd-ilibrary.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,osapublishing.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,oup.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,ovid.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,oxfordartonline.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,oxfordbibliographies.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,oxfordmusiconline.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,pkulaw.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,pnas.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,proquest.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,readcube.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,researchgate.net,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,rsc.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,sagepub.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,sci-hub.tw,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,science.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,sciencedirect.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,sciencemag.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,scitation.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,scopus.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,semanticscholar.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,siam.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,spiedigitallibrary.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,springer.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,springerlink.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,tandfonline.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,un.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,uni-bielefeld.de,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,wanfangdata.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,webofknowledge.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,westlaw.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,westlawchina.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,wiley.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,worldbank.org,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,worldscientific.com,👨‍🎓 学术资源
+  - DOMAIN-SUFFIX,zotero.org,👨‍🎓 学术资源
+  - DOMAIN-KEYWORD,openai,🤖 AI服务
+  - DOMAIN-SUFFIX,auth0.com,🤖 AI服务
+  - DOMAIN-SUFFIX,challenges.cloudflare.com,🤖 AI服务
+  - DOMAIN-SUFFIX,chatgpt.com,🤖 AI服务
+  - DOMAIN-SUFFIX,client-api.arkoselabs.com,🤖 AI服务
+  - DOMAIN-SUFFIX,events.statsigapi.net,🤖 AI服务
+  - DOMAIN-SUFFIX,featuregates.org,🤖 AI服务
+  - DOMAIN-SUFFIX,identrust.com,🤖 AI服务
+  - DOMAIN-SUFFIX,intercom.io,🤖 AI服务
+  - DOMAIN-SUFFIX,intercomcdn.com,🤖 AI服务
+  - DOMAIN-SUFFIX,oaistatic.com,🤖 AI服务
+  - DOMAIN-SUFFIX,oaiusercontent.com,🤖 AI服务
+  - DOMAIN-SUFFIX,openai.com,🤖 AI服务
+  - DOMAIN-SUFFIX,openaiapi-site.azureedge.net,🤖 AI服务
+  - DOMAIN-SUFFIX,sentry.io,🤖 AI服务
+  - DOMAIN-SUFFIX,stripe.com,🤖 AI服务
+  - DOMAIN-KEYWORD,colab,🤖 AI服务
+  - DOMAIN-KEYWORD,developerprofiles,🤖 AI服务
+  - DOMAIN-KEYWORD,generativelanguage,🤖 AI服务
+  - DOMAIN,ai.google.dev,🤖 AI服务
+  - DOMAIN,alkalimakersuite-pa.clients6.google.com,🤖 AI服务
+  - DOMAIN,makersuite.google.com,🤖 AI服务
+  - DOMAIN-SUFFIX,bard.google.com,🤖 AI服务
+  - DOMAIN-SUFFIX,deepmind.com,🤖 AI服务
+  - DOMAIN-SUFFIX,deepmind.google,🤖 AI服务
+  - DOMAIN-SUFFIX,gemini.google.com,🤖 AI服务
+  - DOMAIN-SUFFIX,generativeai.google,🤖 AI服务
+  - DOMAIN-SUFFIX,proactivebackend-pa.googleapis.com,🤖 AI服务
+  - DOMAIN-SUFFIX,apis.google.com,🤖 AI服务
   - DOMAIN-SUFFIX,local,🎯 全球直连
   - IP-CIDR,192.168.0.0/16,🎯 全球直连,no-resolve
   - IP-CIDR,10.0.0.0/8,🎯 全球直连,no-resolve
