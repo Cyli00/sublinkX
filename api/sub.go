@@ -1,10 +1,14 @@
+// api/subcription.go
+
 package api
 
 import (
+	// 导入 json 包，用于解析 config 字符串
+
+	"log"
 	"strconv"
 	"strings"
-	"sublink/models"
-	"time"
+	"sublink/models" // 导入 models 包
 
 	"github.com/gin-gonic/gin"
 )
@@ -43,112 +47,126 @@ func SubGet(c *gin.Context) {
 	})
 }
 
-// 添加节点
+// 添加订阅
 func SubAdd(c *gin.Context) {
-	var sub models.Subcription
 	name := c.PostForm("name")
-	config := c.PostForm("config")
+	configs := c.PostForm("config") // 这里的 configString 是前端传来的 JSON 字符串
 	nodes := c.PostForm("nodes")
+
 	if name == "" || nodes == "" {
 		c.JSON(400, gin.H{
-			"msg": "订阅名称 or 节点不能为空",
+			"msg": "订阅名称或节点不能为空",
 		})
 		return
 	}
-	sub.Nodes = []models.Node{}
-	for _, v := range strings.Split(nodes, ",") {
-		var node models.Node
-		node.Name = v
-		err := node.Find()
-		if err != nil {
+
+	// 1. 根据 nodesString 字符串，构建 models.Node 数组
+	var NodesData []models.Node
+
+	for _, nodeName := range strings.Split(nodes, ",") {
+		if strings.TrimSpace(nodeName) == "" {
 			continue
 		}
-		sub.Nodes = append(sub.Nodes, node)
+		FirstNode := models.Node{
+			Name: nodeName,
+		}
+
+		// 查出node的数据
+		result := models.DB.Model(models.Node{}).Where("name = ?", FirstNode.Name).First(&FirstNode)
+		if result.Error != nil {
+			log.Println(result.Error)
+			c.JSON(400, gin.H{
+				"msg": result.Error,
+			})
+			return
+		}
+		// 插入nodes
+		NodesData = append(NodesData, FirstNode)
 	}
+	sub := models.Subcription{
+		Name:      name,
+		Config:    configs,   // 这里直接赋值字符串
+		NodeOrder: nodes,     // 这里直接赋值字符串
+		Nodes:     NodesData, // 这里直接赋值 nodes 数组
 
-	sub.Config = config
-	sub.Name = name
-	sub.CreateDate = time.Now().Format("2006-01-02 15:04:05")
-
+	}
 	err := sub.Add()
 	if err != nil {
 		c.JSON(400, gin.H{
-			"msg": "添加失败",
+			"msg": "添加订阅失败: " + err.Error(),
 		})
 		return
 	}
-	err = sub.AddNode() //创建多对多关系
-	if err != nil {
-		c.JSON(400, gin.H{
-			"msg": err.Error(),
-		})
-		return
-	}
+
 	c.JSON(200, gin.H{
 		"code": "00000",
-		"msg":  "添加成功",
+		"msg":  "添加订阅成功",
 	})
 }
 
-// 更新节点
+// 更新订阅
 func SubUpdate(c *gin.Context) {
-	var sub models.Subcription
-	name := c.PostForm("name")
-	oldname := c.PostForm("oldname")
-	config := c.PostForm("config")
+	NewName := c.PostForm("name")
+	OldName := c.PostForm("oldname")
+	configs := c.PostForm("config") // 这里的 configString 是前端传来的 JSON 字符串
 	nodes := c.PostForm("nodes")
-	if name == "" || nodes == "" {
+
+	if NewName == "" || nodes == "" {
 		c.JSON(400, gin.H{
-			"msg": "订阅名称 or 节点不能为空",
+			"msg": "订阅名称或节点不能为空",
 		})
 		return
 	}
-	// 查找旧节点
-	sub.Name = oldname
-	err := sub.Find()
-	if err != nil {
-		c.JSON(400, gin.H{
-			"msg": err.Error(),
-		})
-		return
-	}
-	// 更新节点
-	sub.Config = config
-	sub.Name = name
-	sub.CreateDate = time.Now().Format("2006-01-02 15:04:05")
-	sub.Nodes = []models.Node{}
-	for _, v := range strings.Split(nodes, ",") {
-		var node models.Node
-		node.Name = v
-		err := node.Find()
-		if err != nil {
+
+	// 1. 根据 nodesString 字符串，构建 models.Node 数组
+	var NodesData []models.Node
+
+	for _, nodeName := range strings.Split(nodes, ",") {
+		if strings.TrimSpace(nodeName) == "" {
 			continue
 		}
-		sub.Nodes = append(sub.Nodes, node)
+		FirstNode := models.Node{
+			Name: nodeName,
+		}
+
+		// 查出node的数据
+		result := models.DB.Model(models.Node{}).Where("name = ?", FirstNode.Name).First(&FirstNode)
+		if result.Error != nil {
+			log.Println(result.Error)
+			c.JSON(400, gin.H{
+				"msg": result.Error,
+			})
+			return
+		}
+		// 插入nodes
+		NodesData = append(NodesData, FirstNode)
+	}
+	OldSub := models.Subcription{
+		Name: OldName,
+	}
+	NewSub := models.Subcription{
+		Name:      NewName,
+		Config:    configs,   // 这里直接赋值字符串
+		NodeOrder: nodes,     // 这里直接赋值字符串
+		Nodes:     NodesData, // 这里直接赋值 nodes 数组
+
 	}
 
-	err = sub.Update()
+	err := OldSub.Update(&NewSub)
 	if err != nil {
 		c.JSON(400, gin.H{
-			"msg": "更新失败",
+			"msg": "更新订阅失败: " + err.Error(),
 		})
 		return
 	}
 
-	err = sub.UpdateNodes() //更新多对多关系
-	if err != nil {
-		c.JSON(400, gin.H{
-			"msg": err.Error(),
-		})
-		return
-	}
 	c.JSON(200, gin.H{
 		"code": "00000",
-		"msg":  "更新成功",
+		"msg":  "更新订阅成功",
 	})
 }
 
-// 删除节点
+// 删除订阅 (无需修改)
 func SubDel(c *gin.Context) {
 	var sub models.Subcription
 	id := c.Query("id")
@@ -158,24 +176,30 @@ func SubDel(c *gin.Context) {
 		})
 		return
 	}
-	x, _ := strconv.Atoi(id)
-	sub.ID = x
-	err := sub.Find()
+	x, err := strconv.Atoi(id) // 增加错误检查
 	if err != nil {
 		c.JSON(400, gin.H{
-			"msg": "查找失败",
+			"msg": "无效的 ID: " + err.Error(),
+		})
+		return
+	}
+	sub.ID = x
+	err = sub.Find()
+	if err != nil {
+		c.JSON(400, gin.H{
+			"msg": "查找订阅失败: " + err.Error(),
 		})
 		return
 	}
 	err = sub.Del()
 	if err != nil {
 		c.JSON(400, gin.H{
-			"msg": "删除失败",
+			"msg": "删除订阅失败: " + err.Error(),
 		})
 		return
 	}
 	c.JSON(200, gin.H{
 		"code": "00000",
-		"msg":  "删除成功",
+		"msg":  "删除订阅成功",
 	})
 }

@@ -44,11 +44,20 @@ surge支持协议:ss trojan vmess hy2 tuic
 ![1712594176714](webs/src/assets/1.png)
 ![1712594176714](webs/src/assets/2.png)
 
-## [更新说明]
+## [2.1更新说明]
 
-新增指定客户端
+#### 后端更新
 
-修复菜单更新功能没更新菜单版本
+1. 修复底层代码
+2. 修复各种奇葩bug
+3. 建议卸载数据库(记得备份数据) 新数据库结构有些不一样可能会导致一些bug
+
+#### 前端更新
+
+1. 完善node页面
+
+
+
 
 ## [安装说明]
 ### linux方式：
@@ -75,7 +84,14 @@ docker run --name sublinkx -p 8000:8000 \
 -d jaaksi/sublinkx
 ```
 
+To support the development of my project, I plan to apply for a free VPS offered by ZMTO. My project currently involves Docker image support for multiple architectures (arm64 and amd64), as well as automation for building and pushing. Therefore, I am requesting a 4-core, 8GB RAM Ubuntu VPS with root access.
+
+Thank you to the ZMTO team for your support. I look forward to leveraging this VPS to optimize my project's performance and development efficiency. If you have any questions or suggestions regarding my project, feel free to open an issue, and I will do my best to improve and optimize it.
+
+Thank you for your attention and support!
+
+Feel free to adjust any details as needed!
+
 ## Stargazers over time
 [![Stargazers over time](https://starchart.cc/gooaclok819/sublinkX.svg?variant=adaptive)](https://starchart.cc/gooaclok819/sublinkX)
-
 
