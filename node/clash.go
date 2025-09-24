@@ -17,8 +17,10 @@ type Proxy struct {
 	Type               string                 `yaml:"type,omitempty"`
 	Server             string                 `yaml:"server,omitempty"`
 	Port               int                    `yaml:"port,omitempty"`
+	Ports              string                 `yaml:"ports,omitempty"`
 	Cipher             string                 `yaml:"cipher,omitempty"`
 	Password           string                 `yaml:"password,omitempty"`
+	Token              string                 `yaml:"token,omitempty"`
 	Client_fingerprint string                 `yaml:"client-fingerprint,omitempty"`
 	Tfo                bool                   `yaml:"tfo,omitempty"`
 	Udp                bool                   `yaml:"udp,omitempty"`
@@ -41,10 +43,11 @@ type Proxy struct {
 	Obfs_password      string                 `yaml:"obfs-password,omitempty"`
 	Protocol           string                 `yaml:"protocol,omitempty"`
 	Uuid               string                 `yaml:"uuid,omitempty"`
+	Fingerprint        string                 `yaml:"fingerprint,omitempty"`
 	Peer               string                 `yaml:"peer,omitempty"`
-	Congestion_control string                 `yaml:"congestion_control,omitempty"`
-	Udp_relay_mode     string                 `yaml:"udp_relay_mode,omitempty"`
-	Disable_sni        bool                   `yaml:"disable_sni,omitempty"`
+	Congestion_control string                 `yaml:"congestion-controller,omitempty"`
+	Udp_relay_mode     string                 `yaml:"udp-relay-mode,omitempty"`
+	Disable_sni        bool                   `yaml:"disable-sni,omitempty"`
 }
 
 type ProxyGroup struct {
@@ -90,8 +93,13 @@ func EncodeClash(urls []string, sqlconfig SqlConfig) ([]byte, error) {
 	// yamlfile 为模板文件
 	var proxys []Proxy
 
-	for _, link := range urls {
-		Scheme := strings.Split(link, "://")[0]
+	for _, rawLink := range urls {
+		link := strings.TrimSpace(rawLink)
+		if link == "" {
+			continue
+		}
+		Scheme := strings.ToLower(strings.Split(link, "://")[0])
+		udpEnabled := ShouldEnableUDP(link, sqlconfig.Udp)
 		switch {
 		case Scheme == "ss":
 			ss, err := DecodeSSURL(link)
@@ -110,7 +118,7 @@ func EncodeClash(urls []string, sqlconfig SqlConfig) ([]byte, error) {
 				Port:             ss.Port,
 				Cipher:           ss.Param.Cipher,
 				Password:         ss.Param.Password,
-				Udp:              sqlconfig.Udp,
+				Udp:              udpEnabled,
 				Skip_cert_verify: sqlconfig.Cert,
 			}
 			proxys = append(proxys, ssproxy)
@@ -133,7 +141,7 @@ func EncodeClash(urls []string, sqlconfig SqlConfig) ([]byte, error) {
 				Obfs:             ssr.Obfs,
 				Obfs_password:    ssr.Qurey.Obfsparam,
 				Protocol:         ssr.Protocol,
-				Udp:              sqlconfig.Udp,
+				Udp:              udpEnabled,
 				Skip_cert_verify: sqlconfig.Cert,
 			}
 			proxys = append(proxys, ssrproxy)
@@ -166,7 +174,7 @@ func EncodeClash(urls []string, sqlconfig SqlConfig) ([]byte, error) {
 				Flow:               trojan.Query.Flow,
 				Alpn:               trojan.Query.Alpn,
 				Ws_opts:            ws_opts,
-				Udp:                sqlconfig.Udp,
+				Udp:                udpEnabled,
 				Skip_cert_verify:   sqlconfig.Cert,
 			}
 			proxys = append(proxys, trojanproxy)
@@ -204,7 +212,7 @@ func EncodeClash(urls []string, sqlconfig SqlConfig) ([]byte, error) {
 				Network:          vmess.Net,
 				Tls:              tls,
 				Ws_opts:          ws_opts,
-				Udp:              sqlconfig.Udp,
+				Udp:              udpEnabled,
 				Skip_cert_verify: sqlconfig.Cert,
 			}
 			proxys = append(proxys, vmessproxy)
@@ -259,7 +267,7 @@ func EncodeClash(urls []string, sqlconfig SqlConfig) ([]byte, error) {
 				Ws_opts:            ws_opts,
 				Reality_opts:       reality_opts,
 				Grpc_opts:          grpc_opts,
-				Udp:                sqlconfig.Udp,
+				Udp:                udpEnabled,
 				Skip_cert_verify:   sqlconfig.Cert,
 				Tls:                tls,
 			}
@@ -284,8 +292,8 @@ func EncodeClash(urls []string, sqlconfig SqlConfig) ([]byte, error) {
 				Down:             hy.DownMbps,
 				Alpn:             hy.ALPN,
 				Peer:             hy.Peer,
-				Udp:              sqlconfig.Udp,
-				Skip_cert_verify: sqlconfig.Cert,
+				Udp:              udpEnabled,
+				Skip_cert_verify: sqlconfig.Cert || hy.Insecure == 1,
 			}
 			proxys = append(proxys, hyproxy)
 		case Scheme == "hy2" || Scheme == "hysteria2":
@@ -303,14 +311,19 @@ func EncodeClash(urls []string, sqlconfig SqlConfig) ([]byte, error) {
 				Type:             "hysteria2",
 				Server:           hy2.Host,
 				Port:             hy2.Port,
+				Ports:            hy2.Ports,
 				Auth_str:         hy2.Auth,
 				Sni:              hy2.Sni,
 				Alpn:             hy2.ALPN,
 				Obfs:             hy2.Obfs,
 				Password:         hy2.Password,
 				Obfs_password:    hy2.ObfsPassword,
-				Udp:              sqlconfig.Udp,
-				Skip_cert_verify: sqlconfig.Cert,
+				Peer:             hy2.Peer,
+				Fingerprint:      hy2.Fingerprint,
+				Up:               hy2.UpMbps,
+				Down:             hy2.DownMbps,
+				Udp:              udpEnabled,
+				Skip_cert_verify: sqlconfig.Cert || hy2.Insecure == 1,
 			}
 			proxys = append(proxys, hyproxy2)
 		case Scheme == "tuic":
@@ -323,23 +336,20 @@ func EncodeClash(urls []string, sqlconfig SqlConfig) ([]byte, error) {
 			if tuic.Name == "" {
 				tuic.Name = fmt.Sprintf("%s:%d", tuic.Host, tuic.Port)
 			}
-			disable_sni := false
-			if tuic.Disable_sni == 1 {
-				disable_sni = true
-			}
 			tuicproxy := Proxy{
 				Name:               tuic.Name,
 				Type:               "tuic",
 				Server:             tuic.Host,
 				Port:               tuic.Port,
 				Password:           tuic.Password,
+				Token:              tuic.Token,
 				Uuid:               tuic.Uuid,
 				Congestion_control: tuic.Congestion_control,
 				Alpn:               tuic.Alpn,
 				Udp_relay_mode:     tuic.Udp_relay_mode,
-				Disable_sni:        disable_sni,
+				Disable_sni:        tuic.Disable_sni,
 				Sni:                tuic.Sni,
-				Udp:                sqlconfig.Udp,
+				Udp:                udpEnabled,
 				Skip_cert_verify:   sqlconfig.Cert,
 			}
 			proxys = append(proxys, tuicproxy)

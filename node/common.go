@@ -3,8 +3,10 @@ package node
 import (
 	"encoding/base64"
 	"fmt"
+	"net/url"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -99,6 +101,67 @@ func Base64Decode2(s string) string {
 		decoded_str := string(decoded)
 		return decoded_str
 	}
+}
+
+// QueryGetIgnoreCase returns the first value for key regardless of original casing.
+func QueryGetIgnoreCase(values url.Values, key string) string {
+	if len(values) == 0 {
+		return ""
+	}
+	for k, v := range values {
+		if strings.EqualFold(k, key) && len(v) > 0 {
+			return strings.TrimSpace(v[0])
+		}
+	}
+	return ""
+}
+
+// QueryGetIgnoreCaseAny 允许按多个候选键（含连字符/下划线）匹配查询参数。
+func QueryGetIgnoreCaseAny(values url.Values, keys ...string) string {
+	for _, key := range keys {
+		if key == "" {
+			continue
+		}
+		if val := QueryGetIgnoreCase(values, key); val != "" {
+			return val
+		}
+		alt := key
+		if strings.Contains(key, "-") {
+			alt = strings.ReplaceAll(key, "-", "_")
+		} else if strings.Contains(key, "_") {
+			alt = strings.ReplaceAll(key, "_", "-")
+		}
+		if alt != key {
+			if val := QueryGetIgnoreCase(values, alt); val != "" {
+				return val
+			}
+		}
+	}
+	return ""
+}
+
+// ShouldEnableUDP inspects the raw URI and returns the desired UDP flag.
+// If the uri lacks an udp query parameter, the defaultVal is returned.
+func ShouldEnableUDP(rawURL string, defaultVal bool) bool {
+	if rawURL == "" {
+		return defaultVal
+	}
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return defaultVal
+	}
+	values := u.Query()
+	for key, v := range values {
+		if !strings.EqualFold(key, "udp") || len(v) == 0 {
+			continue
+		}
+		parsed, err := strconv.ParseBool(strings.TrimSpace(v[0]))
+		if err != nil {
+			return defaultVal
+		}
+		return parsed
+	}
+	return defaultVal
 }
 
 // 检查环境

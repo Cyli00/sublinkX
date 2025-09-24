@@ -21,6 +21,8 @@ type HY2 struct {
 	Sni          string
 	Obfs         string
 	ObfsPassword string
+	Fingerprint  string
+	Ports        string
 }
 
 // 开发者测试 CallHy 调用
@@ -71,34 +73,73 @@ func EncodeHY2URL(hy2 HY2) string {
 
 // hy2 解码
 func DecodeHY2URL(s string) (HY2, error) {
-	u, err := url.Parse(s)
+	link := strings.TrimSpace(s)
+	u, err := url.Parse(link)
 	if err != nil {
 		return HY2{}, fmt.Errorf("解析失败的URL: %s,错误:%s", s, err)
 	}
-	if u.Scheme != "hy2" && u.Scheme != "hysteria2" {
+	if !strings.EqualFold(u.Scheme, "hy2") && !strings.EqualFold(u.Scheme, "hysteria2") {
 		return HY2{}, fmt.Errorf("非hy2协议: %s", s)
 	}
-	password := u.User.Username()
-	server := u.Hostname()
-	port, _ := strconv.Atoi(u.Port())
-	insecure, _ := strconv.Atoi(u.Query().Get("insecure"))
-	auth := u.Query().Get("auth")
-	upMbps, _ := strconv.Atoi(u.Query().Get("upmbps"))
-	downMbps, _ := strconv.Atoi(u.Query().Get("downmbps"))
-	alpns := u.Query().Get("alpn")
-	alpn := strings.Split(alpns, ",")
-	if alpns == "" {
-		alpn = nil
+	var password string
+	var username string
+	if u.User != nil {
+		username = u.User.Username()
+		if pass, ok := u.User.Password(); ok {
+			password = pass
+		} else {
+			password = username
+			username = ""
+		}
 	}
-	sni := u.Query().Get("sni")
-	obfs := u.Query().Get("obfs")
-	obfsPassword := u.Query().Get("obfs-password")
-	name := u.Fragment
+	server := u.Hostname()
+	port := 443
+	if p := strings.TrimSpace(u.Port()); p != "" {
+		if parsedPort, err := strconv.Atoi(p); err == nil {
+			port = parsedPort
+		}
+	}
+	query := u.Query()
+	peer := QueryGetIgnoreCase(query, "peer")
+	sni := QueryGetIgnoreCase(query, "sni")
+	if sni == "" {
+		sni = peer
+	}
+	insecure := 0
+	if rawInsecure := QueryGetIgnoreCase(query, "insecure"); rawInsecure != "" {
+		if parsed, err := strconv.ParseBool(rawInsecure); err == nil {
+			if parsed {
+				insecure = 1
+			}
+		}
+	}
+	auth := QueryGetIgnoreCase(query, "auth")
+	upMbps := parseHy2Bandwidth(QueryGetIgnoreCase(query, "up"))
+	if upMbps == 0 {
+		upMbps = parseHy2Bandwidth(QueryGetIgnoreCase(query, "upmbps"))
+	}
+	downMbps := parseHy2Bandwidth(QueryGetIgnoreCase(query, "down"))
+	if downMbps == 0 {
+		downMbps = parseHy2Bandwidth(QueryGetIgnoreCase(query, "downmbps"))
+	}
+	alpn := parseHy2Alpn(QueryGetIgnoreCase(query, "alpn"))
+	obfs := QueryGetIgnoreCase(query, "obfs")
+	obfsPassword := QueryGetIgnoreCase(query, "obfs-password")
+	if obfsPassword == "" {
+		obfsPassword = QueryGetIgnoreCase(query, "obfs_password")
+	}
+	fingerprint := QueryGetIgnoreCase(query, "pinsha256")
+	if fingerprint == "" {
+		fingerprint = QueryGetIgnoreCase(query, "pinhash")
+	}
+	ports := QueryGetIgnoreCaseAny(query, "ports", "port-range")
+	name := strings.TrimSpace(u.Fragment)
 	// 如果没有设置 Name，则使用 Host:Port 作为 Fragment
 	if name == "" {
-		name = server + ":" + u.Port()
+		name = fmt.Sprintf("%s:%d", server, port)
 	}
 	if CheckEnvironment() {
+		fmt.Println("username:", username)
 		fmt.Println("password:", password)
 		fmt.Println("server:", server)
 		fmt.Println("port:", port)
@@ -107,9 +148,12 @@ func DecodeHY2URL(s string) (HY2, error) {
 		fmt.Println("upMbps:", upMbps)
 		fmt.Println("downMbps:", downMbps)
 		fmt.Println("alpn:", alpn)
+		fmt.Println("peer:", peer)
 		fmt.Println("sni:", sni)
 		fmt.Println("obfs:", obfs)
 		fmt.Println("obfsPassword:", obfsPassword)
+		fmt.Println("fingerprint:", fingerprint)
+		fmt.Println("ports:", ports)
 		fmt.Println("name:", name)
 	}
 	return HY2{
@@ -117,6 +161,7 @@ func DecodeHY2URL(s string) (HY2, error) {
 		Host:         server,
 		Port:         port,
 		Insecure:     insecure,
+		Peer:         peer,
 		Auth:         auth,
 		UpMbps:       upMbps,
 		DownMbps:     downMbps,
@@ -125,5 +170,41 @@ func DecodeHY2URL(s string) (HY2, error) {
 		Sni:          sni,
 		Obfs:         obfs,
 		ObfsPassword: obfsPassword,
+		Fingerprint:  fingerprint,
+		Ports:        ports,
 	}, nil
+}
+
+func parseHy2Alpn(raw string) []string {
+	if raw == "" {
+		return nil
+	}
+	parts := strings.Split(raw, ",")
+	result := make([]string, 0, len(parts))
+	for _, part := range parts {
+		p := strings.TrimSpace(part)
+		if p != "" {
+			result = append(result, p)
+		}
+	}
+	if len(result) == 0 {
+		return nil
+	}
+	return result
+}
+
+func parseHy2Bandwidth(raw string) int {
+	if raw == "" {
+		return 0
+	}
+	value := strings.ToLower(strings.TrimSpace(raw))
+	value = strings.TrimSuffix(value, "mbps")
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return 0
+	}
+	if v, err := strconv.Atoi(value); err == nil {
+		return v
+	}
+	return 0
 }
